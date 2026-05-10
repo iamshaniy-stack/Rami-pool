@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>רמי בריכות — הצעת מחיר</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --deep:  #07111f;
+  --navy:  #0d2137;
+  --pool:  #0a5f7a;
+  --aqua:  #18b4ce;
+  --aqua2: #d4f2f8;
+  --gold:  #c8983e;
+  --gold2: #fdf3e0;
+  --white: #ffffff;
+  --bg:    #eef3f8;
+  --surf:  #f7f9fc;
+  --bord:  #dce6ef;
+  --txt:   #111b27;
+  --mut:   #6b83a0;
+  --red:   #e05252;
+  --safe:  env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  overflow-x: hidden;
+}
+
+/* ── APP SHELL ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--white);
+  box-shadow: 0 0 40px rgba(7,17,31,0.12);
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--deep);
+  padding: 16px 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.topbar-logo {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1;
+}
+.topbar-logo em { font-style: normal; color: var(--aqua); }
+.topbar-sub { font-size: 0.65rem; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+.topbar-btn {
+  background: rgba(24,180,206,0.15);
+  border: 1px solid rgba(24,180,206,0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--aqua);
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.topbar-btn:active { background: rgba(24,180,206,0.28); }
+
+/* ── STEP PROGRESS ── */
+.progress-bar {
+  background: var(--navy);
+  padding: 10px 20px 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.step-dot {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.12);
+  transition: background 0.3s;
+}
+.step-dot.done { background: var(--aqua); }
+.step-dot.active { background: var(--gold); }
+.step-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+/* ── PAGES ── */
+.pages { flex: 1; overflow: hidden; position: relative; }
+.page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 24px 20px 120px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-24px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  -webkit-overflow-scrolling: touch;
+}
+.page.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+.page.exit {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+/* ── PAGE HEADER ── */
+.pg-header { margin-bottom: 24px; }
+.pg-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--aqua2);
+  color: var(--pool);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+.pg-title {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--deep);
+  line-height: 1.1;
+}
+.pg-sub { font-size: 0.85rem; color: var(--mut); margin-top: 4px; }
+
+/* ── FIELDS ── */
+.field { margin-bottom: 18px; }
+.field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--mut);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--bord);
+  border-radius: 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 1rem;
+  color: var(--txt);
+  background: var(--surf);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--aqua);
+  box-shadow: 0 0 0 3px rgba(24,180,206,0.12);
+  background: var(--white);
+}
+.field input::placeholder, .field textarea::placeholder { color: #b8c8d8; }
+.field textarea { resize: none; line-height: 1.6; }
+
+/* ── PHASES (items page) ── */
+.phase-card {
+  background: var(--surf);
+  border: 1.5px solid var(--bord);
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.phase-card-head {
+  background: linear-gradient(135deg, var(--pool), #0e7a98);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.phase-card-head input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  color: white;
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+  padding: 2px 4px;
+  min-width: 0;
+}
+.phase-card-head input::placeholder { color: rgba(255,255,255,0.4); font-weight: 400; font-family: 'Heebo',sans-serif; }
+.btn-icon {
+  background: none; border: none; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.btn-icon.danger { color: rgba(255,255,255,0.45); }
+.btn-icon.danger:active { color: #ff9090; background: rgba(255,80,80,0.2); }
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid var(--bord);
+  padding: 0 8px 0 4px;
+}
+.item-row:last-child { border-bottom: none; }
+.item-row-desc {
+  flex: 1;
+  padding: 11px 8px;
+  border: none;
+  background: transparent;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.88rem;
+  color: var(--txt);
+  outline: none;
+  min-width: 0;
+}
+.item-row-desc::placeholder { color: #b8c8d8; }
+.item-row-price {
+  width: 80px;
+  padding: 11px 8px;
+  border: none;
+  border-right: 1px solid var(--bord);
+  background: transparent;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.88rem;
+  color: var(--pool);
+  font-weight: 600;
+  outline: none;
+  text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.item-row-price::placeholder { color: #b8c8d8; font-weight: 400; }
+.item-row-del {
+  background: none; border: none; cursor: pointer;
+  color: #ccc; font-size: 1rem; padding: 8px 6px;
+  flex-shrink: 0; transition: color 0.15s;
+}
+.item-row-del:active { color: var(--red); }
+
+.phase-col-head {
+  display: flex;
+  border-bottom: 1.5px solid var(--bord);
+  padding: 0 8px 0 4px;
+  background: #f0f4f8;
+}
+.phase-col-head span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--mut);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 7px 8px;
+}
+.phase-col-head .ch-desc { flex: 1; }
+.phase-col-head .ch-price { width: 80px; border-right: 1px solid var(--bord); text-align: center; }
+.phase-col-head .ch-del { width: 32px; }
+
+.btn-add-item-row {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 11px;
+  background: transparent; border: none;
+  border-top: 1.5px dashed rgba(24,180,206,0.3);
+  color: var(--pool); font-family: 'Heebo', sans-serif;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-add-item-row:active { background: var(--aqua2); }
+
+.btn-add-phase {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  background: transparent;
+  border: 2px dashed var(--bord);
+  border-radius: 14px;
+  color: var(--mut); font-family: 'Heebo', sans-serif;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all 0.18s;
+  margin-top: 4px;
+}
+.btn-add-phase:active { border-color: var(--aqua); color: var(--pool); background: var(--aqua2); }
+
+/* ── TOTALS CARD ── */
+.totals-card {
+  background: var(--deep);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.totals-vat {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.totals-vat label { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+.totals-vat select {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px; color: var(--aqua); padding: 6px 12px;
+  font-family: 'Heebo',sans-serif; font-size: 0.85rem; font-weight: 700; outline: none;
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+}
+.t-row { display: flex; justify-content: space-between; padding: 6px 0; }
+.t-row .tl { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+.t-row .tv { font-size: 0.88rem; font-weight: 600; color: rgba(255,255,255,0.8); }
+.t-row.grand {
+  margin-top: 10px; padding-top: 14px;
+  border-top: 1px solid rgba(24,180,206,0.3);
+}
+.t-row.grand .tl { color: var(--aqua); font-weight: 700; font-size: 0.85rem; }
+.t-row.grand .tv { color: var(--gold); font-size: 1.5rem; font-weight: 900; font-family: 'Frank Ruhl Libre', serif; }
+
+/* ── NOTE BOX ── */
+.note-box {
+  background: var(--surf); border: 1.5px solid var(--bord);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+  transition: border-color 0.18s;
+}
+.note-box:focus-within { border-color: var(--aqua); }
+.note-box .nb-title {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--pool); margin-bottom: 8px;
+}
+.note-box textarea {
+  width: 100%; border: none; background: transparent;
+  font-family: 'Heebo',sans-serif; font-size: 0.9rem; color: var(--txt);
+  outline: none; resize: none; line-height: 1.7;
+}
+.note-box textarea::placeholder { color: #b8c8d8; }
+
+.gold-box {
+  background: var(--gold2); border: 1.5px solid rgba(200,152,62,0.2);
+}
+.gold-box .nb-title { color: var(--gold); }
+
+/* ── PREVIEW PAGE ── */
+.preview-head {
+  background: var(--deep);
+  margin: -24px -20px 20px;
+  padding: 24px 20px 20px;
+}
+.preview-biz-name {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 1.8rem; font-weight: 900; color: var(--white); line-height: 1;
+}
+.preview-biz-name em { font-style: normal; color: var(--aqua); }
+.preview-biz-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+.preview-contacts { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+.preview-contacts span { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+.preview-contacts strong { color: rgba(255,255,255,0.85); }
+
+.preview-strip {
+  background: linear-gradient(135deg, var(--pool), #0e7a98);
+  margin: 0 -20px 20px;
+  padding: 12px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.preview-strip h2 { font-family: 'Frank Ruhl Libre', serif; font-size: 1rem; font-weight: 700; color: var(--white); }
+.preview-strip span { font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+
+.preview-section { margin-bottom: 20px; }
+.preview-section-title {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--pool);
+  padding-bottom: 8px; margin-bottom: 10px;
+  border-bottom: 1.5px solid var(--bord);
+}
+.preview-client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.preview-field { display: flex; flex-direction: column; gap: 2px; }
+.preview-field .pf-label { font-size: 0.68rem; color: var(--mut); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.preview-field .pf-val { font-size: 0.88rem; color: var(--txt); font-weight: 500; }
+.preview-field .pf-val.empty { color: #ccd5de; font-style: italic; }
+
+.preview-phase { margin-bottom: 14px; }
+.preview-phase-title {
+  background: linear-gradient(135deg, var(--pool), #0e7a98);
+  color: white; font-weight: 700; font-size: 0.88rem;
+  padding: 8px 14px; border-radius: 8px 8px 0 0;
+}
+.preview-items-table { width: 100%; border-collapse: collapse; }
+.preview-items-table tr { border-bottom: 1px solid var(--bord); }
+.preview-items-table tr:last-child { border-bottom: none; }
+.preview-items-table td { padding: 8px 14px; font-size: 0.85rem; vertical-align: middle; }
+.preview-items-table td:last-child { text-align: left; font-weight: 700; color: var(--pool); white-space: nowrap; }
+.preview-items-table .pt-num { width: 28px; color: var(--mut); font-size: 0.75rem; }
+.preview-table-wrap { border: 1.5px solid var(--bord); border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+
+.preview-totals {
+  background: var(--deep); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 16px;
+}
+.preview-total-row { display: flex; justify-content: space-between; padding: 4px 0; }
+.preview-total-row .ptl { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+.preview-total-row .ptv { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.8); }
+.preview-total-row.grand-row { margin-top: 8px; padding-top: 12px; border-top: 1px solid rgba(24,180,206,0.3); }
+.preview-total-row.grand-row .ptl { color: var(--aqua); font-weight: 700; font-size: 0.85rem; }
+.preview-total-row.grand-row .ptv { color: var(--gold); font-size: 1.3rem; font-weight: 900; font-family: 'Frank Ruhl Libre', serif; }
+
+.preview-note {
+  background: var(--surf); border: 1.5px solid var(--bord);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 0.85rem; line-height: 1.65;
+}
+.preview-note .pn-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--pool); margin-bottom: 6px; }
+.preview-note.gold { background: var(--gold2); border-color: rgba(200,152,62,0.2); }
+.preview-note.gold .pn-title { color: var(--gold); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--white);
+  border-top: 1.5px solid var(--bord);
+  padding: 12px 20px calc(12px + var(--safe));
+  display: flex; gap: 10px;
+  z-index: 100;
+}
+.nav-btn {
+  flex: 1; padding: 14px;
+  border: none; border-radius: 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
+}
+.nav-btn.back { background: var(--surf); color: var(--mut); border: 1.5px solid var(--bord); }
+.nav-btn.back:active { background: var(--bord); }
+.nav-btn.next { background: var(--aqua); color: var(--deep); }
+.nav-btn.next:active { background: #13a3bc; }
+.nav-btn.finish { background: var(--gold); color: white; }
+.nav-btn.finish:active { background: #b08030; }
+.nav-btn.full { flex: 2; }
+
+/* ── PRINT ── */
+@media print {
+  .topbar, .progress-bar, .bottom-nav { display: none !important; }
+  .app { max-width: 100%; box-shadow: none; }
+  .pages { overflow: visible; position: static; }
+  .page { position: static; opacity: 1; pointer-events: all; transform: none; padding: 20px; display: none; }
+  .page#pg-preview { display: block !important; }
+  .preview-head { margin: -20px -20px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">רמי <em>בריכות</em></div>
+      <div class="topbar-sub">מחולל הצעות מחיר</div>
+    </div>
+    <button class="topbar-btn" onclick="goPreview()">👁 תצוגה מקדימה</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar">
+    <span class="step-label" id="stepLabel">שלב 1 מתוך 4</span>
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="pages">
+
+    <!-- PAGE 0: CLIENT -->
+    <div class="page active" id="pg-0">
+      <div class="pg-header">
+        <div class="pg-icon">👤</div>
+        <div class="pg-title">פרטי לקוח</div>
+        <div class="pg-sub">מי מקבל את ההצעה?</div>
+      </div>
+      <div class="field"><label>שם לקוח / חברה</label><input type="text" id="clientName" placeholder="שם הלקוח או החברה"></div>
+      <div class="field"><label>כתובת</label><input type="text" id="clientAddress" placeholder="רחוב, מספר, עיר"></div>
+      <div class="field"><label>טלפון</label><input type="tel" id="clientPhone" placeholder="05X-XXXXXXX"></div>
+      <div class="field"><label>אימייל</label><input type="email" id="clientEmail" placeholder="example@email.com"></div>
+      <div class="field"><label>תאריך הצעה</label><input type="date" id="quoteDate"></div>
+      <div class="field"><label>כותרת הפרויקט</label><input type="text" id="projectTitle" placeholder="למשל: בריכת גלישה 3.5×8.5"></div>
+    </div>
+
+    <!-- PAGE 1: ITEMS -->
+    <div class="page" id="pg-1">
+      <div class="pg-header">
+        <div class="pg-icon">📋</div>
+        <div class="pg-title">פריטים ושירותים</div>
+        <div class="pg-sub">הוסף שלבים ורשום מחירים</div>
+      </div>
+      <div id="phasesWrap"></div>
+      <button class="btn-add-phase" onclick="addPhase()">＋ הוסף שלב / קטגוריה</button>
+    </div>
+
+    <!-- PAGE 2: NOTES -->
+    <div class="page" id="pg-2">
+      <div class="pg-header">
+        <div class="pg-icon">📝</div>
+        <div class="pg-title">תנאים והערות</div>
+        <div class="pg-sub">פרט תנאי תשלום ואחריות</div>
+      </div>
+
+      <div class="note-box" style="margin-bottom:14px">
+        <div class="nb-title">⚠️ באחריות מזמין העבודה</div>
+        <textarea id="clientResp" rows="5" placeholder="פרט אחריות הלקוח..."></textarea>
+      </div>
+
+      <div class="note-box gold" style="margin-bottom:14px">
+        <div class="nb-title">💳 תנאי תשלום</div>
+        <textarea id="paymentTerms" rows="3"></textarea>
+      </div>
+
+      <div class="note-box gold" style="margin-bottom:14px">
+        <div class="nb-title">📅 תוקף ההצעה</div>
+        <textarea id="validityTerms" rows="2"></textarea>
+      </div>
+
+      <div class="note-box" style="margin-bottom:14px">
+        <div class="nb-title">📝 הערות נוספות</div>
+        <textarea id="extraNotes" rows="3" placeholder="הוסף הערות חשובות..."></textarea>
+      </div>
+
+      <div class="totals-card">
+        <div class="totals-vat">
+          <label>שיעור מע"מ</label>
+          <select id="vatRate" onchange="recalc()">
+            <option value="18">18%</option>
+            <option value="17">17%</option>
+            <option value="0">ללא מע"מ</option>
+          </select>
+        </div>
+        <div class="t-row"><span class="tl">סה"כ לפני מע"מ</span><span class="tv" id="sub2">₪0</span></div>
+        <div class="t-row"><span class="tl">מע"מ</span><span class="tv" id="vat2">₪0</span></div>
+        <div class="t-row grand"><span class="tl">סה"כ לתשלום</span><span class="tv" id="grand2">₪0</span></div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: PREVIEW -->
+    <div class="page" id="pg-preview">
+      <div class="preview-head">
+        <div class="preview-biz-name">רמי <em>בריכות שחיה</em></div>
+        <div class="preview-biz-sub">הקמה · תיקונים · אחזקה · ציוד</div>
+        <div class="preview-contacts">
+          <span>📍 נתניה</span>
+          <span>📞 <strong>052-8364359</strong></span>
+          <span>✉ <strong>Ramiyossef972@gmail.com</strong></span>
+          <span style="font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:4px">עוסק מורשה 056680945</span>
+        </div>
+      </div>
+
+      <div class="preview-strip">
+        <h2>הצעת מחיר</h2>
+        <span id="pv-date"></span>
+      </div>
+
+      <div class="preview-section">
+        <div class="preview-section-title">פרטי לקוח</div>
+        <div class="preview-client-grid">
+          <div class="preview-field"><div class="pf-label">לכבוד</div><div class="pf-val" id="pv-name">—</div></div>
+          <div class="preview-field"><div class="pf-label">כתובת</div><div class="pf-val" id="pv-addr">—</div></div>
+          <div class="preview-field"><div class="pf-label">טלפון</div><div class="pf-val" id="pv-phone">—</div></div>
+          <div class="preview-field"><div class="pf-label">אימייל</div><div class="pf-val" id="pv-email">—</div></div>
+        </div>
+        <div style="margin-top:12px;padding:10px 14px;background:var(--aqua2);border-radius:8px;font-weight:700;color:var(--pool);font-size:0.9rem" id="pv-project"></div>
+      </div>
+
+      <div class="preview-section" id="pv-phases"></div>
+
+      <div class="preview-totals">
+        <div class="preview-total-row"><span class="ptl">סה"כ לפני מע"מ</span><span class="ptv" id="pv-sub">₪0</span></div>
+        <div class="preview-total-row"><span class="ptl">מע"מ</span><span class="ptv" id="pv-vat">₪0</span></div>
+        <div class="preview-total-row grand-row"><span class="ptl">סה"כ לתשלום</span><span class="ptv" id="pv-grand">₪0</span></div>
+      </div>
+
+      <div class="preview-note" id="pv-resp-box" style="display:none">
+        <div class="pn-title">⚠️ באחריות מזמין העבודה</div>
+        <div id="pv-resp" style="white-space:pre-line"></div>
+      </div>
+      <div class="preview-note gold" id="pv-pay-box" style="display:none">
+        <div class="pn-title">💳 תנאי תשלום</div>
+        <div id="pv-pay" style="white-space:pre-line"></div>
+      </div>
+      <div class="preview-note gold" id="pv-valid-box" style="display:none">
+        <div class="pn-title">📅 תוקף ההצעה</div>
+        <div id="pv-valid" style="white-space:pre-line"></div>
+      </div>
+      <div class="preview-note" id="pv-notes-box" style="display:none">
+        <div class="pn-title">📝 הערות נוספות</div>
+        <div id="pv-notes" style="white-space:pre-line"></div>
+      </div>
+
+      <div style="text-align:center;padding:20px 0;border-top:1.5px solid var(--bord);margin-top:12px">
+        <div style="width:140px;border-top:1px solid var(--bord);margin:0 auto 6px"></div>
+        <div style="font-size:0.7rem;color:var(--mut)">חתימת לקוח ואישור</div>
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bottomNav">
+    <button class="nav-btn back" id="btnBack" onclick="goBack()" style="display:none">→ חזור</button>
+    <button class="nav-btn next full" id="btnNext" onclick="goNext()">פרטי שירותים ←</button>
+  </div>
+
+</div>
+
+<script>
+  /* ─── STATE ─── */
+  let currentPage = 0;
+  const PAGES = ['pg-0','pg-1','pg-2','pg-preview'];
+  const LABELS = ['שלב 1 מתוך 4','שלב 2 מתוך 4','שלב 3 מתוך 4','תצוגה מקדימה'];
+  const NEXT_LABELS = ['פרטי שירותים ←','תנאים והערות ←','תצוגה מקדימה ←','🖨️ הדפס / שמור PDF'];
+  let phaseCount = 0, rowCount = 0;
+
+  /* ─── INIT ─── */
+  document.getElementById('quoteDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('paymentTerms').value = 'חצי מסך כל העסקה תועבר בהעברה בנקאית בעת אישור ההצעה — לפני תחילת עבודה. בסוף העבודה — התשלום הנותר. שוטף +30.';
+  document.getElementById('validityTerms').value = 'תוקף ההצעה 60 ימים ממועד הפקתה.';
+
+  /* load default content */
+  document.getElementById('projectTitle').value = 'הצעת מחיר לבריכת גלישה 3.5×8.5';
+
+  const p1 = addPhase("שלב א׳ — התקנת צנרת P.V.C 63 בגוף הבריכה");
+  ['הכנה ל-6 אינלטים בריצפת הבריכה ועוד 6 אינלטים בקיר הבריכה',
+   'הכנה ל-3 פנסי לד שקועים','הכנה ל-2 בורות יניקה','הכנה לואקום קלינר',
+   'הכנת כל השרוולים הנדרשים בח.מ ומיכל האיזון (ביוב, חימום, אובר פלו)',
+   'בדיקת לחץ לצנרת הבריכה לפני יציקה'
+  ].forEach(d => addRow(p1, d));
+
+  const p2 = addPhase("שלב ב׳ — התקנת ציוד בח.מ");
+  ['התקנת מסנן חול 900 ברז עליון בורר מצבים','התקנת משאבת סינון 3×3 כ"ס',
+   'התקנת משאבה טבולה','התקנת מפוח 4" לאיוורור ח.מ','התקנת בקר כלור + חומצה',
+   'התקנת לוח חשמל כולל הפעלות מרחוק','התקנת תאורה בח.מ',
+   'התקנת סולמות פייבר גלאס בח.מ ומיכל איזון (אין צורך בהארקה)',
+   'התקנת מערכת מצופים למילוי מים אוטומטי','התקנת מיקרו סוויץ',
+   'התקנת כל אביזרי קצה בבריכה',
+   'לאחר מילוי מים בבריכה על ידי הלקוח תתבצע הפעלה וינתן הסבר'
+  ].forEach(d => addRow(p2, d));
+
+  document.getElementById('clientResp').value =
+`1. לדאוג להארקת יסוד לבריכה
+2. לדאוג לכל הזנות החשמל מלוח הבית לתוך ח.מ (הנחיות ימסרו על ידי חשמלאי הבריכה)
+3. לדאוג להזנת קו מים חיים לתוך ח.מ כולל ברז
+4. לדאוג לכל הארכות השרוולים (מלבד החימום)`;
+
+  document.getElementById('extraNotes').value =
+`הצעה זו אינה כוללת מכסים עבור ח.מ ומיכל איזון. במידה ויתבקש, תינתן הצעה נפרדת.
+
+נשמח לבצע עבורכם את הפרויקט וכן לענות לכל שאלה.`;
+
+  /* ─── PHASES ─── */
+  function addPhase(title = '') {
+    phaseCount++;
+    const pid = phaseCount;
+    const wrap = document.getElementById('phasesWrap');
+    const div = document.createElement('div');
+    div.className = 'phase-card';
+    div.id = 'phase-' + pid;
+    const esc = title.replace(/"/g,'&quot;');
+    div.innerHTML = `
+      <div class="phase-card-head">
+        <input type="text" value="${esc}" placeholder="שם השלב / קטגוריה">
+        <button class="btn-icon danger" onclick="removePhase(${pid})">🗑</button>
+      </div>
+      <div class="phase-col-head">
+        <span class="ch-desc">תיאור פריט</span>
+        <span class="ch-price">מחיר ₪</span>
+        <span class="ch-del"></span>
+      </div>
+      <div id="rows-${pid}"></div>
+      <button class="btn-add-item-row" onclick="addRow(${pid})">＋ הוסף פריט</button>
+    `;
+    wrap.appendChild(div);
+    return pid;
+  }
+
+  function removePhase(pid) {
+    const el = document.getElementById('phase-' + pid);
+    if (el) { el.remove(); recalc(); }
+  }
+
+  function addRow(pid, desc = '') {
+    rowCount++;
+    const rid = rowCount;
+    const wrap = document.getElementById('rows-' + pid);
+    if (!wrap) return;
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.id = 'row-' + rid;
+    const esc = desc.replace(/"/g,'&quot;');
+    div.innerHTML = `
+      <input class="item-row-desc" type="text" value="${esc}" placeholder="תיאור הפריט...">
+      <input class="item-row-price" type="number" min="0" placeholder="₪">
+      <button class="item-row-del" onclick="removeRow(${rid})">✕</button>
+    `;
+    wrap.appendChild(div);
+    div.querySelectorAll('input').forEach(i => i.addEventListener('input', recalc));
+    recalc();
+  }
+
+  function removeRow(rid) {
+    const el = document.getElementById('row-' + rid);
+    if (el) { el.remove(); recalc(); }
+  }
+
+  /* ─── CALC ─── */
+  function recalc() {
+    let sub = 0;
+    document.querySelectorAll('.item-row').forEach(row => {
+      const p = parseFloat(row.querySelector('.item-row-price')?.value) || 0;
+      sub += p;
+    });
+    const vr = parseFloat(document.getElementById('vatRate').value) / 100;
+    const vat = sub * vr, grand = sub + vat;
+    const fmt = n => '₪' + n.toLocaleString('he-IL');
+    document.getElementById('sub2').textContent   = fmt(sub);
+    document.getElementById('vat2').textContent   = fmt(vat);
+    document.getElementById('grand2').textContent = fmt(grand);
+  }
+
+  /* ─── NAVIGATION ─── */
+  function goTo(idx) {
+    const fromEl = document.getElementById(PAGES[currentPage]);
+    fromEl.classList.add('exit');
+    setTimeout(() => { fromEl.classList.remove('active','exit'); }, 250);
+
+    currentPage = idx;
+    const toEl = document.getElementById(PAGES[currentPage]);
+    setTimeout(() => { toEl.classList.add('active'); }, 30);
+
+    // progress
+    document.getElementById('stepLabel').textContent = LABELS[currentPage];
+    for (let i = 0; i < 4; i++) {
+      const d = document.getElementById('dot'+i);
+      d.className = 'step-dot';
+      if (i < currentPage) d.classList.add('done');
+      else if (i === currentPage) d.classList.add('active');
+    }
+
+    // buttons
+    const btnBack = document.getElementById('btnBack');
+    const btnNext = document.getElementById('btnNext');
+    btnBack.style.display = currentPage === 0 ? 'none' : 'flex';
+    btnNext.textContent = NEXT_LABELS[currentPage];
+    btnNext.className = 'nav-btn next' + (currentPage === 0 ? ' full' : '');
+    if (currentPage === PAGES.length - 1) {
+      btnNext.className = 'nav-btn finish' + (currentPage === 0 ? ' full' : '');
+      buildPreview();
+    }
+
+    window.scrollTo(0, 0);
+    toEl.scrollTo(0, 0);
+  }
+
+  function goNext() {
+    if (currentPage === PAGES.length - 1) { window.print(); return; }
+    goTo(currentPage + 1);
+  }
+  function goBack() { if (currentPage > 0) goTo(currentPage - 1); }
+  function goPreview() { goTo(PAGES.length - 1); }
+
+  /* ─── BUILD PREVIEW ─── */
+  function buildPreview() {
+    const v = id => document.getElementById(id)?.value || '';
+    const fmt = n => '₪' + n.toLocaleString('he-IL');
+
+    // date
+    const d = v('quoteDate');
+    document.getElementById('pv-date').textContent = d ? new Date(d).toLocaleDateString('he-IL') : '';
+
+    // client
+    const setTxt = (id, val) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = val || '—';
+      el.className = 'pf-val' + (val ? '' : ' empty');
+    };
+    setTxt('pv-name', v('clientName'));
+    setTxt('pv-addr', v('clientAddress'));
+    setTxt('pv-phone', v('clientPhone'));
+    setTxt('pv-email', v('clientEmail'));
+    const proj = document.getElementById('pv-project');
+    proj.textContent = v('projectTitle') || '';
+    proj.style.display = v('projectTitle') ? 'block' : 'none';
+
+    // phases + items
+    let sub = 0;
+    const pvPhases = document.getElementById('pv-phases');
+    pvPhases.innerHTML = '<div class="preview-section-title">פריטים ושירותים</div>';
+
+    document.querySelectorAll('.phase-card').forEach(card => {
+      const title = card.querySelector('.phase-card-head input')?.value || 'שלב';
+      const rows = card.querySelectorAll('.item-row');
+      if (!rows.length) return;
+
+      const phDiv = document.createElement('div');
+      phDiv.className = 'preview-phase';
+      phDiv.innerHTML = `<div class="preview-phase-title">${title}</div>
+        <div class="preview-table-wrap">
+          <table class="preview-items-table"><tbody id="pvtb-${card.id}"></tbody></table>
+        </div>`;
+      pvPhases.appendChild(phDiv);
+
+      const tbody = phDiv.querySelector('tbody');
+      let i = 1;
+      rows.forEach(row => {
+        const desc = row.querySelector('.item-row-desc')?.value || '';
+        const price = parseFloat(row.querySelector('.item-row-price')?.value) || 0;
+        if (!desc && !price) return;
+        sub += price;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="pt-num">${i++}</td>
+          <td>${desc || '—'}</td>
+          <td>${price > 0 ? fmt(price) : '—'}</td>`;
+        tbody.appendChild(tr);
+      });
+    });
+
+    // totals
+    const vr = parseFloat(document.getElementById('vatRate').value) / 100;
+    const vat = sub * vr, grand = sub + vat;
+    document.getElementById('pv-sub').textContent   = fmt(sub);
+    document.getElementById('pv-vat').textContent   = fmt(vat);
+    document.getElementById('pv-grand').textContent = fmt(grand);
+
+    // notes
+    const showNote = (boxId, textId, val) => {
+      const box = document.getElementById(boxId);
+      const txt = document.getElementById(textId);
+      if (!box || !txt) return;
+      box.style.display = val ? 'block' : 'none';
+      txt.textContent = val;
+    };
+    showNote('pv-resp-box','pv-resp', v('clientResp'));
+    showNote('pv-pay-box','pv-pay', v('paymentTerms'));
+    showNote('pv-valid-box','pv-valid', v('validityTerms'));
+    showNote('pv-notes-box','pv-notes', v('extraNotes'));
+  }
+</script>
+</body>
+</html>
